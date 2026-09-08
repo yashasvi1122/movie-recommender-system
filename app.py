@@ -3,7 +3,9 @@ import pickle
 import requests
 
 
-# ---------------- PAGE CONFIG ----------------
+# ==================================================
+# PAGE CONFIG
+# ==================================================
 
 st.set_page_config(
     page_title="MovieVerse",
@@ -12,129 +14,173 @@ st.set_page_config(
 )
 
 
-# ---------------- CUSTOM CSS ----------------
+# ==================================================
+# CUSTOM CSS
+# ==================================================
 
 st.markdown("""
 <style>
+
+/* Main background */
 
 .stApp {
     background-color: #0f172a;
 }
 
 
-/* Main heading */
+/* Remove unnecessary top spacing */
+
+.block-container {
+    padding-top: 2rem;
+}
+
+
+/* Main title */
 
 .title {
     text-align: center;
-    font-size: 55px;
-    font-weight: bold;
-    color: #ffffff;
-    margin-bottom: 0px;
+    font-size: 58px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 5px;
 }
 
+
+/* Subtitle */
 
 .subtitle {
     text-align: center;
-    font-size: 20px;
+    font-size: 21px;
     color: #94a3b8;
-    margin-bottom: 40px;
+    margin-bottom: 45px;
 }
 
 
-/* Recommendation section */
+/* Section heading */
 
 .section-title {
-    font-size: 30px;
-    font-weight: bold;
+    font-size: 34px;
+    font-weight: 800;
     color: white;
-    margin-top: 40px;
-    margin-bottom: 25px;
+    margin-top: 55px;
+    margin-bottom: 30px;
 }
 
 
-/* Movie card */
+/* Selectbox text */
 
-.movie-card {
-    background-color: #1e293b;
-    padding: 18px;
-    border-radius: 15px;
-    border: 1px solid #334155;
-    min-height: 220px;
-    margin-top: 10px;
+div[data-baseweb="select"] {
+    font-size: 18px;
 }
 
 
-/* Movie name */
+/* Make selectbox bigger */
 
-.movie-name {
-    font-size: 19px;
-    font-weight: bold;
-    color: white;
-    margin-top: 12px;
-    margin-bottom: 12px;
+div[data-baseweb="select"] > div {
+    min-height: 55px;
 }
 
 
-/* Movie details */
-
-.movie-details {
-    color: #cbd5e1;
-    font-size: 14px;
-    line-height: 1.8;
-}
-
-
-/* Recommendation label */
-
-.movie-type {
-    color: #94a3b8;
-    font-size: 13px;
-    margin-top: 15px;
-}
-
-
-/* Button styling */
+/* Recommendation button */
 
 .stButton > button {
-    background-color: #e50914;
-    color: white;
-    font-size: 17px;
-    font-weight: bold;
-    border-radius: 8px;
-    border: none;
-    padding: 10px;
+    background-color: #e50914 !important;
+    color: white !important;
+
+    font-size: 20px !important;
+    font-weight: bold !important;
+
+    border-radius: 10px !important;
+    border: none !important;
+
+    min-height: 58px !important;
+
+    padding: 12px 25px !important;
+
+    width: 100% !important;
+
+    transition: 0.3s;
 }
 
+
+/* Button hover */
+
 .stButton > button:hover {
-    background-color: #b20710;
-    color: white;
+    background-color: #b20710 !important;
+    color: white !important;
+}
+
+
+/* Movie information */
+
+.movie-info {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #cbd5e1;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 
-# ---------------- LOAD DATA ----------------
+# ==================================================
+# LOAD MOVIE DATA
+# ==================================================
 
-movies_dict = pickle.load(
-    open("movie_list.pkl", "rb")
-)
+try:
+
+    movies_dict = pickle.load(
+        open("movie_list.pkl", "rb")
+    )
+
+    similarity = pickle.load(
+        open("similarity.pkl", "rb")
+    )
+
+except FileNotFoundError:
+
+    st.error(
+        "Movie data files not found. "
+        "Make sure movie_list.pkl and similarity.pkl "
+        "are in the same folder as app.py."
+    )
+
+    st.stop()
+
+
+# Reset index to avoid similarity index problems
+
+movies_dict = movies_dict.reset_index(drop=True)
+
+
+# Get movie titles
 
 movies = movies_dict["title"].values
 
 
-similarity = pickle.load(
-    open("similarity.pkl", "rb")
-)
+# ==================================================
+# LOAD OMDB API KEY
+# ==================================================
+
+try:
+
+    API_KEY = st.secrets["OMDB_API_KEY"]
+
+except Exception:
+
+    st.error(
+        "OMDb API key not found. "
+        "Please check your .streamlit/secrets.toml file."
+    )
+
+    st.stop()
 
 
-# ---------------- OMDb API KEY ----------------
+# ==================================================
+# FETCH MOVIE DETAILS FROM OMDB
+# ==================================================
 
-api_key = "YOUR_API_KEY"
-
-
-# ---------------- FETCH MOVIE DETAILS ----------------
-
+@st.cache_data(show_spinner=False)
 def fetch_movie_details(movie_name):
 
     try:
@@ -150,164 +196,302 @@ def fetch_movie_details(movie_name):
 
         data = response.json()
 
+
+        # API request successful
+
         if data.get("Response") == "True":
 
             return {
-                "poster": data.get("Poster"),
-                "rating": data.get("imdbRating"),
-                "genre": data.get("Genre"),
-                "year": data.get("Year")
+
+                "poster": data.get(
+                    "Poster",
+                    "N/A"
+                ),
+
+                "rating": data.get(
+                    "imdbRating",
+                    "N/A"
+                ),
+
+                "genre": data.get(
+                    "Genre",
+                    "N/A"
+                ),
+
+                "year": data.get(
+                    "Year",
+                    "N/A"
+                )
+
             }
 
+
+        # Movie not found or API error
+
+        return None
+
+
+    except requests.exceptions.RequestException:
+
+        return None
+
+
     except Exception:
-        pass
 
-    return None
+        return None
 
 
-# ---------------- RECOMMEND FUNCTION ----------------
+# ==================================================
+# MOVIE RECOMMENDATION FUNCTION
+# ==================================================
 
 def recommend(movie):
+
+    # Find position of selected movie
 
     movie_index = movies_dict[
         movies_dict["title"] == movie
     ].index[0]
 
+
+    # Get similarity scores
+
     distances = similarity[movie_index]
+
+
+    # Sort movies according to similarity
 
     movie_list = sorted(
         list(enumerate(distances)),
         reverse=True,
         key=lambda x: x[1]
-    )[1:6]
+    )
+
+
+    # Remove selected movie and take 5 recommendations
+
+    movie_list = movie_list[1:6]
+
 
     recommended_movies = []
 
+
     for i in movie_list:
 
+        movie_name = movies_dict.iloc[
+            i[0]
+        ].title
+
+
         recommended_movies.append(
-            movies_dict.iloc[i[0]].title
+            movie_name
         )
+
 
     return recommended_movies
 
 
-# ---------------- HEADER ----------------
+# ==================================================
+# HEADER
+# ==================================================
 
 st.markdown(
     '<div class="title">🎬 MovieVerse</div>',
     unsafe_allow_html=True
 )
 
+
 st.markdown(
-    '<div class="subtitle">'
-    'Discover movies you will love • Powered by Machine Learning 🤖'
-    '</div>',
+    '''
+    <div class="subtitle">
+        Discover movies you will love • Powered by Machine Learning 🤖
+    </div>
+    ''',
     unsafe_allow_html=True
 )
 
 
-# ---------------- MOVIE SELECTION ----------------
+# ==================================================
+# MOVIE SELECTION AREA
+# ==================================================
 
-col1, col2, col3 = st.columns([1, 2, 1])
+# Create a centered area
 
-with col2:
+left_space, main_area, right_space = st.columns(
+    [1, 2.5, 1]
+)
+
+
+with main_area:
 
     selected_movie = st.selectbox(
         "🔍 Choose a movie you like",
         movies
     )
 
-    recommend_button = st.button(
-        "✨ RECOMMEND MOVIES",
-        use_container_width=True
+
+    # Center the recommendation button
+
+    button_left, button_center, button_right = st.columns(
+        [0.5, 3, 0.5]
     )
 
 
-# ---------------- RECOMMENDATIONS ----------------
+    with button_center:
+
+        recommend_button = st.button(
+            "✨ RECOMMEND MOVIES"
+        )
+
+
+# ==================================================
+# RECOMMENDATIONS
+# ==================================================
 
 if recommend_button:
 
-    recommendations = recommend(selected_movie)
+
+    # Get recommended movies
+
+    recommendations = recommend(
+        selected_movie
+    )
+
+
+    # Section heading
 
     st.markdown(
-        '<div class="section-title">🎬 Recommended For You</div>',
+        '<div class="section-title">'
+        '🎬 Recommended For You'
+        '</div>',
         unsafe_allow_html=True
     )
 
+
+    # Create 5 columns
+
     cols = st.columns(5)
 
-    for index, movie_name in enumerate(recommendations):
+
+    # ==================================================
+    # DISPLAY EACH MOVIE
+    # ==================================================
+
+    for index, movie_name in enumerate(
+        recommendations
+    ):
+
 
         with cols[index]:
 
-            # Fetch movie details from OMDb
-            movie_details = fetch_movie_details(movie_name)
 
-            # ---------------- POSTER ----------------
+            # ------------------------------------------
+            # Fetch movie details
+            # ------------------------------------------
 
-            if (
-                movie_details
-                and movie_details["poster"]
-                and movie_details["poster"] != "N/A"
-            ):
-
-                st.image(
-                    movie_details["poster"],
-                    width=200
-                )
-
-            else:
-
-                st.write("🎬 Poster not available")
-
-
-            # ---------------- MOVIE NAME ----------------
-
-            st.markdown(
-                f'<div class="movie-name">{movie_name}</div>',
-                unsafe_allow_html=True
+            movie_details = fetch_movie_details(
+                movie_name
             )
 
 
-            # ---------------- MOVIE DETAILS ----------------
+            # ------------------------------------------
+            # POSTER
+            # ------------------------------------------
 
-            if movie_details:
+            if (
+                movie_details is not None
+                and movie_details["poster"] is not None
+                and movie_details["poster"] != "N/A"
+            ):
 
-                rating = movie_details["rating"]
-                genre = movie_details["genre"]
-                year = movie_details["year"]
+                try:
 
-                st.markdown(
-                    f"""
-                    <div class="movie-details">
-                        ⭐ IMDb: {rating}<br>
-                        🎭 {genre}<br>
-                        📅 {year}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                    # use_column_width works with your
+                    # older Streamlit version
+
+                    st.image(
+                        movie_details["poster"],
+                        use_column_width=True
+                    )
+
+                except Exception:
+
+                    st.info(
+                        "🎬 Poster not available"
+                    )
+
 
             else:
 
-                st.markdown(
-                    """
-                    <div class="movie-details">
-                        Movie details not available
-                    </div>
-                    """,
-                    unsafe_allow_html=True
+                st.info(
+                    "🎬 Poster not available"
                 )
 
 
-            # ---------------- RECOMMENDATION TYPE ----------------
+            # ------------------------------------------
+            # GET MOVIE DETAILS
+            # ------------------------------------------
+
+            if movie_details is not None:
+
+
+                rating = movie_details.get(
+                    "rating",
+                    "N/A"
+                )
+
+
+                genre = movie_details.get(
+                    "genre",
+                    "N/A"
+                )
+
+
+                year = movie_details.get(
+                    "year",
+                    "N/A"
+                )
+
+
+            else:
+
+
+                rating = "N/A"
+
+                genre = "N/A"
+
+                year = "N/A"
+
+
+            # ------------------------------------------
+            # MOVIE CARD
+            # ------------------------------------------
+
+            st.markdown("---")
+
+
+            # Movie name
 
             st.markdown(
+                f"### 🎬 {movie_name}"
+            )
+
+
+            # Movie information
+
+            st.markdown(
+                f"""
+                ⭐ **IMDb Rating:** {rating}
+
+                🎭 **Genre:** {genre}
+
+                📅 **Year:** {year}
                 """
-                <div class="movie-type">
-                    🤖 Content-Based Recommendation
-                </div>
-                """,
-                unsafe_allow_html=True
+            )
+
+
+            # Recommendation type
+
+            st.caption(
+                "🤖 Content-Based Recommendation"
             )
