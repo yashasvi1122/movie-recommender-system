@@ -130,7 +130,7 @@ similarity = pickle.load(
 
 # ---------------- OMDb API KEY ----------------
 
-API_KEY = "2cbd66b9"
+api_key = "YOUR_API_KEY"
 
 
 # ---------------- FETCH MOVIE DETAILS ----------------
