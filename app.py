@@ -3,6 +3,7 @@ import pickle
 import requests
 from io import BytesIO
 
+
 # ==================================================
 # PAGE CONFIG
 # ==================================================
@@ -333,7 +334,7 @@ with main_area:
     # Center the recommendation button
 
     button_left, button_center, button_right = st.columns(
-    [0.5, 3, 0.5]
+        [0.5, 3, 0.5]
     )
 
 
@@ -406,11 +407,18 @@ if recommend_button:
                     poster_response = requests.get(
                         movie_details["poster"],
                         headers={
-                            "User-Agent": "Mozilla/5.0"
+                            "User-Agent": "Mozilla/5.0",
+                            "Accept": (
+                                "image/avif,image/webp,"
+                                "image/apng,image/svg+xml,"
+                                "image/*,*/*;q=0.8"
+                            )
                         },
                         timeout=15
                     )
 
+
+                    # Check whether poster request succeeded
 
                     if poster_response.status_code == 200:
 
@@ -424,17 +432,19 @@ if recommend_button:
                             use_column_width=True
                         )
 
+
                     else:
 
-                        st.info(
-                            "🎬 Poster not available"
+                        st.error(
+                            "Poster request failed: "
+                            f"HTTP {poster_response.status_code}"
                         )
 
 
-                except Exception:
+                except Exception as e:
 
-                    st.info(
-                        "🎬 Poster not available"
+                    st.error(
+                        f"Poster error: {type(e).__name__}: {e}"
                     )
 
 
