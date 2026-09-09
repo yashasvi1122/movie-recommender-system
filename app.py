@@ -203,7 +203,6 @@ def fetch_movie_details(movie_name):
         if data.get("Response") == "True":
 
             return {
-
                 "poster": data.get(
                     "Poster",
                     "N/A"
@@ -223,7 +222,6 @@ def fetch_movie_details(movie_name):
                     "Year",
                     "N/A"
                 )
-
             }
 
 
@@ -315,8 +313,6 @@ st.markdown(
 # ==================================================
 # MOVIE SELECTION AREA
 # ==================================================
-
-# Create a centered area
 
 left_space, main_area, right_space = st.columns(
     [1, 2.5, 1]
@@ -418,7 +414,7 @@ if recommend_button:
                     )
 
 
-                    # Check whether poster request succeeded
+                    # Check if poster was downloaded
 
                     if poster_response.status_code == 200:
 
@@ -427,24 +423,26 @@ if recommend_button:
                         )
 
 
+                        # IMPORTANT:
+                        # Do not use use_column_width here.
+                        # It causes an error on Streamlit Cloud.
+
                         st.image(
-                            poster_image,
-                            use_column_width=True
+                            poster_image
                         )
 
 
                     else:
 
-                        st.error(
-                            "Poster request failed: "
-                            f"HTTP {poster_response.status_code}"
+                        st.info(
+                            "🎬 Poster not available"
                         )
 
 
-                except Exception as e:
+                except Exception:
 
-                    st.error(
-                        f"Poster error: {type(e).__name__}: {e}"
+                    st.info(
+                        "🎬 Poster not available"
                     )
 
 
