@@ -1,41 +1,81 @@
 # 🎬 MovieVerse - Movie Recommendation System
 
-MovieVerse is a Content-Based Movie Recommendation System built using Machine Learning and Streamlit.
+[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-MovieVerse-red)](https://movie-recommender-system-uc5cnvgs5l4jttxsqwwtts.streamlit.app/)
 
-## Features
+MovieVerse is a **Content-Based Movie Recommendation System** built using **Machine Learning, Python, and Streamlit**.
 
-- Select a movie from the list
-- Get 5 similar movie recommendations
-- View movie posters
-- Content-based recommendation system
-- Interactive Streamlit user interface
+The application recommends movies similar to the movie selected by the user and displays additional movie information such as IMDb rating, genre, release year, and movie posters.
 
-## Technologies Used
+---
 
-- Python
-- Streamlit
-- Pandas
-- Scikit-learn
-- Pickle
-- OMDb API
+## 🚀 Live Demo
 
-## How to Run
+👉 **Try MovieVerse here:**
 
-Install the required libraries:
+https://movie-recommender-system-uc5cnvgs5l4jttxsqwwtts.streamlit.app/
 
-pip install -r requirements.txt
+---
 
-Run the application:
+## 📌 Project Overview
 
-streamlit run app.py
+MovieVerse uses a **Content-Based Filtering** approach to recommend movies.
 
-## Project Structure
+The system analyzes movie information such as:
 
-movie-recommender-system/
-│
-├── app.py
-├── movie-recommender-system.ipynb
-├── movie_list.pkl
-├── similarity.pkl
-├── requirements.txt
-└── README.md
+- 🎬 Movie genres
+- 📝 Movie descriptions
+- 🎭 Keywords
+- 👥 Cast
+- 🎥 Directors
+
+Based on these features, the system calculates the similarity between movies and recommends the **top 5 most similar movies**.
+
+---
+
+## ✨ Features
+
+- 🎬 Select a movie from the movie list
+- 🤖 Get 5 similar movie recommendations
+- 🖼️ Display movie posters
+- ⭐ Display IMDb ratings
+- 🎭 Display movie genres
+- 📅 Display movie release years
+- 🧠 Content-Based Recommendation System
+- 💻 Interactive Streamlit interface
+- ☁️ Deployed using Streamlit Community Cloud
+
+---
+
+## 🖥️ Application Preview
+
+The MovieVerse application provides a simple interface where users can:
+
+1. Select a movie they like.
+2. Click **RECOMMEND MOVIES**.
+3. Get five similar movies.
+4. View posters and movie information.
+
+---
+
+## 🧠 Machine Learning Approach
+
+MovieVerse uses **Content-Based Filtering**.
+
+### How it works
+
+```text
+Movie Dataset
+      ↓
+Data Preprocessing
+      ↓
+Feature Extraction
+      ↓
+Combine Movie Features
+      ↓
+Calculate Similarity
+      ↓
+Similarity Matrix
+      ↓
+Movie Recommendation
+      ↓
+Top 5 Similar Movies
