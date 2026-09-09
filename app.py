@@ -333,7 +333,7 @@ with main_area:
     # Center the recommendation button
 
     button_left, button_center, button_right = st.columns(
-        [0.5, 3, 0.5]
+    [0.5, 3, 0.5]
     )
 
 
@@ -405,7 +405,10 @@ if recommend_button:
 
                     poster_response = requests.get(
                         movie_details["poster"],
-                        timeout=10
+                        headers={
+                            "User-Agent": "Mozilla/5.0"
+                        },
+                        timeout=15
                     )
 
 
