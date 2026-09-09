@@ -1,7 +1,7 @@
 import streamlit as st
 import pickle
 import requests
-
+from io import BytesIO
 
 # ==================================================
 # PAGE CONFIG
@@ -170,7 +170,7 @@ except Exception:
 
     st.error(
         "OMDb API key not found. "
-        "Please check your .streamlit/secrets.toml file."
+        "Please check your Streamlit Secrets."
     )
 
     st.stop()
@@ -350,7 +350,6 @@ with main_area:
 
 if recommend_button:
 
-
     # Get recommended movies
 
     recommendations = recommend(
@@ -381,12 +380,10 @@ if recommend_button:
         recommendations
     ):
 
-
         with cols[index]:
 
-
             # ------------------------------------------
-            # Fetch movie details
+            # FETCH MOVIE DETAILS
             # ------------------------------------------
 
             movie_details = fetch_movie_details(
@@ -400,19 +397,36 @@ if recommend_button:
 
             if (
                 movie_details is not None
-                and movie_details["poster"] is not None
+                and movie_details.get("poster")
                 and movie_details["poster"] != "N/A"
             ):
 
                 try:
 
-                    # use_column_width works with your
-                    # older Streamlit version
-
-                    st.image(
+                    poster_response = requests.get(
                         movie_details["poster"],
-                        use_column_width=True
+                        timeout=10
                     )
+
+
+                    if poster_response.status_code == 200:
+
+                        poster_image = BytesIO(
+                            poster_response.content
+                        )
+
+
+                        st.image(
+                            poster_image,
+                            use_column_width=True
+                        )
+
+                    else:
+
+                        st.info(
+                            "🎬 Poster not available"
+                        )
+
 
                 except Exception:
 
@@ -434,27 +448,22 @@ if recommend_button:
 
             if movie_details is not None:
 
-
                 rating = movie_details.get(
                     "rating",
                     "N/A"
                 )
-
 
                 genre = movie_details.get(
                     "genre",
                     "N/A"
                 )
 
-
                 year = movie_details.get(
                     "year",
                     "N/A"
                 )
 
-
             else:
-
 
                 rating = "N/A"
 
